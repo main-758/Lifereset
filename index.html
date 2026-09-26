@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Life Reset — MVP</title>
+<meta name="description" content="Turn life's chaos into a simple plan for today, tomorrow and this week.">
+<style>
+:root{--ink:#202124;--muted:#6b7280;--bg:#f7f7fb;--card:#fff;--line:#e7e7ef;--accent:#6d5dfc;--accent2:#8b7cff;--good:#22a06b;--warn:#d99100;--bad:#d94a4a}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,textarea{font:inherit}button{cursor:pointer;border:0}.app{max-width:980px;margin:auto;padding:24px 18px 60px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.brand{font-weight:900;font-size:22px;letter-spacing:-.5px}.brand span{color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 8px 30px #2221;margin-bottom:18px}
+.hero{padding:42px 30px;text-align:center;background:linear-gradient(135deg,#fff,#f0eeff)}h1{font-size:clamp(32px,7vw,58px);line-height:1;margin:8px 0 14px;letter-spacing:-2px}h2{margin:0 0 8px;font-size:27px}h3{margin:0 0 6px}.sub{color:var(--muted);line-height:1.55}.btn{padding:13px 18px;border-radius:14px;font-weight:800}.primary{background:var(--accent);color:#fff}.secondary{background:#efeff7;color:var(--ink)}.ghost{background:transparent;color:var(--accent);padding:8px}
+.screen{display:none}.screen.active{display:block}.progress{height:8px;background:#e9e9f2;border-radius:9px;overflow:hidden;margin:10px 0 22px}.progress>i{display:block;height:100%;background:var(--accent);transition:.25s}
+.options{display:grid;gap:10px;margin:20px 0}.option{padding:16px;border:2px solid var(--line);border-radius:16px;background:#fff;text-align:left}.option.selected{border-color:var(--accent);background:#f4f2ff}.option b{display:block;margin-bottom:4px}
+.scoregrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}.score{border:1px solid var(--line);border-radius:18px;padding:17px}.emoji{font-size:28px}.bar{height:9px;background:#eee;border-radius:10px;margin:12px 0 7px;overflow:hidden}.bar i{display:block;height:100%;border-radius:10px}.good i{background:var(--good)}.needs i{background:var(--warn)}.critical i{background:var(--bad)}
+.plan{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.bucket{border:1px solid var(--line);border-radius:18px;padding:17px}.bucket h3{margin-bottom:12px}.task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.task:last-child{border-bottom:0}.task input{margin-top:5px;accent-color:var(--accent)}.task.done span{text-decoration:line-through;color:#999}
+textarea{width:100%;min-height:180px;border:2px solid var(--line);border-radius:18px;padding:16px;resize:vertical;outline:none}textarea:focus{border-color:var(--accent)}
+.topline{display:flex;justify-content:space-between;gap:12px;align-items:center}.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#f0efff;color:#5548d9;font-weight:800;font-size:12px}
+.sharecard{max-width:600px;margin:0 auto;padding:30px;border-radius:28px;background:linear-gradient(145deg,#6d5dfc,#9b8fff);color:white}.sharecard .scoregrid{grid-template-columns:repeat(2,1fr)}.sharecard .score{background:#ffffff18;border-color:#ffffff33}.sharecard .bar{background:#ffffff35}.sharecard .good i,.sharecard .needs i,.sharecard .critical i{background:#fff}
+.small{font-size:13px;color:var(--muted)}.row{display:flex;gap:10px;flex-wrap:wrap}.right{text-align:right}.center{text-align:center}
+@media(max-width:720px){.scoregrid,.plan{grid-template-columns:1fr}.card{padding:20px}.hero{padding:34px 20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">Life <span>Reset</span></div><button class="ghost" onclick="resetApp()">Reset demo</button></header>
+
+<section id="welcome" class="screen active">
+<div class="card hero">
+<div class="pill">30-second life reset</div>
+<h1>Tell us what's going on.<br><span style="color:var(--accent)">We'll help you reset.</span></h1>
+<p class="sub">No complicated forms. Get a simple picture of your life and a practical plan for today, tomorrow and this week.</p>
+<button class="btn primary" onclick="show('quiz')">Start my reset →</button>
+</div>
+<div class="card"><h3>What you'll get</h3><p class="sub">✓ Six-area Life Reset Scorecard &nbsp; ✓ Personalized action plan &nbsp; ✓ Checkable tasks &nbsp; ✓ Shareable results</p></div>
+</section>
+
+<section id="quiz" class="screen">
+<div class="card">
+<div class="topline"><span class="small" id="qCount"></span><span class="pill">Life in 30 Seconds</span></div>
+<div class="progress"><i id="prog"></i></div>
+<h2 id="qTitle"></h2><p class="sub" id="qHint"></p>
+<div class="options" id="opts"></div>
+<div class="right"><button class="btn primary" id="nextBtn" disabled onclick="nextQ()">Continue →</button></div>
+</div>
+</section>
+
+<section id="score" class="screen">
+<div class="card center">
+<div class="pill">Your Life Reset Scorecard</div><h2 id="scoreHeadline"></h2><p class="sub">This isn't a judgment. It's a snapshot of where your attention may help most right now.</p>
+<div id="scoreGrid" class="scoregrid"></div>
+<div class="row" style="justify-content:center"><button class="btn secondary" onclick="shareScore()">Share scorecard</button><button class="btn primary" onclick="show('brain')">Build my Reset Plan →</button></div>
+<p id="shareStatus" class="small"></p>
+</div>
+</section>
+
+<section id="brain" class="screen">
+<div class="card">
+<div class="pill">Reset Plan</div><h2>What's going on right now?</h2>
+<p class="sub">Dump it all here. Money, parenting, work, home, goals, deadlines — messy is okay.</p>
+<textarea id="brainDump" placeholder="Example: I'm behind on bills, looking for work, my house is messy, I have a child's birthday coming up, and I don't know where to start..."></textarea>
+<div class="topline" style="margin-top:15px"><span class="small" id="limitText"></span><button class="btn primary" onclick="generatePlan()">Create my plan →</button></div>
+</div>
+</section>
+
+<section id="planScreen" class="screen">
+<div class="card">
+<div class="topline"><div><div class="pill">Your Reset Plan</div><h2>One step at a time.</h2></div><button class="btn secondary" onclick="show('brain')">Regenerate</button></div>
+<p class="sub" id="planIntro"></p>
+<div id="plan" class="plan"></div>
+</div>
+<div class="card">
+<h3>Keep going</h3><p class="sub">Completed tasks stay saved on this device. Your next reset can build from what you finished.</p>
+<button class="btn primary" onclick="show('score')">View my scorecard</button>
+</div>
+</section>
+</div>
+
+<script>
+const questions=[
+{cat:"Home",title:"How does your home feel right now?",hint:"Think about your space and everyday chores.",opts:[["Under control","I can keep up."],["A little behind","Some things need attention."],["Overwhelming","I don't know where to start."]]},
+{cat:"Money",title:"How are things financially?",hint:"Bills, income and financial pressure.",opts:[["Stable","I can cover what I need."],["Tight","I'm juggling a few things."],["Critical","I'm worried about immediate needs."]]},
+{cat:"Goals",title:"How connected do you feel to your goals?",hint:"Personal goals, dreams or things you want to accomplish.",opts:[["On track","I know what I'm working toward."],["Unclear","I need to refocus."],["Stuck","I feel far from where I want to be."]]},
+{cat:"Relationships",title:"How are your important relationships?",hint:"Family, partner, friends and support system.",opts:[["Supported","I have people I can lean on."],["Needs attention","Some relationships need care."],["Strained","I feel disconnected or unsupported."]]},
+{cat:"Self-care",title:"How are you taking care of yourself?",hint:"Rest, emotional space, movement and basic needs.",opts:[["Good","I'm making space for myself."],["Needs attention","I've been putting myself last."],["Critical","I'm running on empty."]]},
+{cat:"Career",title:"How are things with work or career?",hint:"Employment, school-to-work plans, business or career direction.",opts:[["Stable","Things are moving."],["In transition","I'm figuring out my next step."],["Urgent","I need work or a major change."]]}
+];
+let qi=0, answers={}, planCount=Number(localStorage.getItem("lr_plans")||0), tasks=JSON.parse(localStorage.getItem("lr_tasks")||"[]");
+
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active"); if(id==="quiz")renderQ(); if(id==="brain")updateLimit(); if(id==="score")renderScore();}
+function renderQ(){let q=questions[qi];qCount.textContent=`${qi+1} of ${questions.length}`;prog.style.width=((qi)/questions.length*100)+"%";qTitle.textContent=q.title;qHint.textContent=q.hint;nextBtn.disabled=answers[q.cat]==null;opts.innerHTML=q.opts.map((o,i)=>`<button class="option ${answers[q.cat]===i?'selected':''}" onclick="pick(${i})"><b>${o[0]}</b><span class="small">${o[1]}</span></button>`).join("");nextBtn.textContent=qi===questions.length-1?"See my scorecard →":"Continue →";}
+function pick(i){answers[questions[qi].cat]=i;renderQ()}
+function nextQ(){if(answers[questions[qi].cat]==null)return;if(qi<questions.length-1){qi++;renderQ()}else show("score")}
+function scoreLevel(v){return ["good","needs","critical"][v]}
+function renderScore(){let names=Object.keys(answers);let critical=names.filter(k=>answers[k]===2).length, needs=names.filter(k=>answers[k]===1).length;scoreHeadline.textContent=critical?"Let's focus on what needs support first.":needs?"You have a few areas ready for a reset.":"You're in a solid place — let's build momentum.";scoreGrid.innerHTML=questions.map(q=>{let v=answers[q.cat]??0,l=["Good","Needs Attention","Critical"][v],emoji=["🟢","🟡","🔴"][v];return `<div class="score ${scoreLevel(v)}"><div class="emoji">${emoji}</div><b>${q.cat}</b><div class="bar"><i style="width:${[100,60,25][v]}%"></i></div><span class="small">${l}</span></div>`}).join("")}
+function updateLimit(){let left=Math.max(0,3-planCount);limitText.textContent=left?`${left} free plan generation${left===1?"":"s"} left this week`:"Free limit reached — reset demo data to continue."}
+function generatePlan(){if(planCount>=3){alert("You've used the 3 free plan generations in this demo. Premium would remove this limit.");return}let dump=brainDump.value.trim();if(!dump){alert("Tell us what's going on first.");return}planCount++;localStorage.setItem("lr_plans",planCount);let urgent=questions.filter(q=>answers[q.cat]===2).map(q=>q.cat);let needs=questions.filter(q=>answers[q.cat]===1).map(q=>q.cat);let all=(urgent.concat(needs).concat(["Goals"])).slice(0,3);let base=all.length?all:["Goals"];let generated=[
+`Write down the single most urgent thing in ${base[0]} and the next physical step.`,
+`Handle one small task that reduces pressure today.`,
+`Put one important deadline, bill, call or commitment into your calendar.`,
+`Spend 15 focused minutes on ${base[1]||"your top priority"}.`,
+`Remove one obstacle that has been making the week harder.`,
+`Choose the three things that matter most before adding anything else.`,
+`Review what you completed and carry only unfinished priorities forward.`,
+`Set aside 20 minutes for ${base[2]||"your next goal"}.`,
+`Plan one simple action that makes tomorrow easier.`
+];let buckets=[generated.slice(0,3),generated.slice(3,6),generated.slice(6,9)];let titles=["Today","Tomorrow","This Week"];let html=buckets.map((b,bi)=>`<div class="bucket"><h3>${titles[bi]}</h3>${b.map((t,j)=>{let id=`${planCount}-${bi}-${j}`,done=tasks.includes(id);return `<label class="task ${done?'done':''}"><input type="checkbox" ${done?'checked':''} onchange="toggleTask('${id}',this.checked)"><span>${t}</span></label>`}).join("")}</div>`).join("");plan.innerHTML=html;planIntro.textContent=`Based on your scorecard and what you shared, start small. You do not need to fix everything today.`;show("planScreen");}
+function toggleTask(id,checked){if(checked&&!tasks.includes(id))tasks.push(id);if(!checked)tasks=tasks.filter(x=>x!==id);localStorage.setItem("lr_tasks",JSON.stringify(tasks));generatePlanViewOnly()}
+function generatePlanViewOnly(){let active=document.getElementById("planScreen").classList.contains("active");if(active){let dump=brainDump.value;let oldCount=planCount;planCount=Math.max(0,planCount-1);generatePlan();planCount=oldCount;localStorage.setItem("lr_plans",oldCount)}}
+async function shareScore(){let text="My Life Reset Scorecard ✨\\n"+questions.map(q=>q.cat+": "+["Good","Needs Attention","Critical"][answers[q.cat]]).join("\\n");if(navigator.share){try{await navigator.share({title:"My Life Reset Scorecard",text})}catch(e){}}else{await navigator.clipboard?.writeText(text);shareStatus.textContent="Scorecard copied — paste it into Instagram, TikTok or a message.";}}
+function resetApp(){localStorage.removeItem("lr_plans");localStorage.removeItem("lr_tasks");location.reload()}
+renderQ();
+</script>
+</body>
+</html>
